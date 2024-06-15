@@ -1,52 +1,44 @@
-import pandas as pd
+
 import duckdb
 import streamlit as st
-import io
 
-csv = '''
-beverage,price
-orange juice,2.5
-Expresso,2
-Tea,3
-'''
-beverages = pd.read_csv(io.StringIO(csv))
+con = duckdb.connect(database="data/exercises_sql_tables.duckdb", read_only=False)
 
-csv2 = '''
-food_item,price
-cookie juice,2.5
-chocolatine,2
-muffin,3
-'''
-food_items = pd.read_csv(io.StringIO(csv2))
-
-with st.sidebar:
-    option = st.selectbox(
-        "What would you like to review?",
-        ("Joins", "GroupBy", "Window Functions"),
-        index=None,
-        placeholder="Select a theme"
-    )
-
-answer = """
+ANSWER_STR = """
 SELECT * FROM beverages
 CROSS JOIN food_items
 """
 
-solution = duckdb.sql(answer).df()
+solution_df = duckdb.sql(ANSWER_STR).df()
+
+with st.sidebar:
+    theme = st.selectbox(
+        "What would you like to review?",
+        ("cross_joins", "GroupBy", "Window Functions"),
+        index=None,
+        placeholder="Select a theme"
+    )
+    st.write("You selected", theme)
+
+    exercise = con.execute(f"SELECT * FROM memory_state WHERE theme = '{theme}")
+    st.write(exercise)
+
+
+st.header("enter your code:")
 query = st.text_area(label="Your SQL code here", key="user_input")
-if query:
-    result = duckdb.sql(query).df()
-    st.dataframe(result)
-
-tab2, tab3 = st.tabs(["Tables", "Solution"])
-
-with tab2:
-    st.write("table: beverages")
-    st.dataframe(beverages)
-    st.write("table: food_items")
-    st.dataframe(food_items)
-    st.write("expected")
-    st.dataframe(solution)
-
-with tab3:
-    st.write(answer)
+# if query:
+#     result = duckdb.sql(query).df()
+#     st.dataframe(result)
+#
+# tab2, tab3 = st.tabs(["Tables", "solution_df"])
+#
+# with tab2:
+#     st.write("table: beverages")
+#     st.dataframe(beverages)
+#     st.write("table: food_items")
+#     st.dataframe(food_items)
+#     st.write("expected")
+#     st.dataframe(solution_df)
+#
+# with tab3:
+#     st.write(ANSWER_STR)
